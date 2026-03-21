@@ -1,0 +1,19 @@
+{
+  "name": "download-proxy",
+  "main": "workers.js",
+  "compatibility_date": "2026-03-21",
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "proxy.zakomc.top",
+      "custom_domain": true
+    }
+  ],
+  "env": {
+    "production": {
+      "vars": {
+        "ENVIRONMENT": "production"
+      }
+    }
+  }
+}
