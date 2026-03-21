@@ -1,6 +1,6 @@
 // workers.js
-// 安全代理：只允许代理 oss.download.zakomc.top
-// 使用格式：https://proxy.zakomc.top/https://oss.download.zakomc.top/文件路径
+// 安全代理：只允许代理 oss.zakoxun.top
+// 使用格式：https://proxy.zakoxun.top/https://oss.zakoxun.top/文件路径
 
 export default {
   async fetch(request) {
@@ -17,7 +17,7 @@ export default {
       return new Response(
         '使用说明：请在路径后添加完整的目标 URL。\n' +
         '正确示例：\n' +
-        'https://proxy.zakomc.top/https://oss.download.zakomc.top/文件名\n\n' +
+        'https://proxy.zakoxun.top/https://oss.zakoxun.top/文件名\n\n' +
         '当前路径：' + path,
         { status: 400, headers: { 'Content-Type': 'text/plain' } }
       );
@@ -31,8 +31,8 @@ export default {
       return new Response('无效的目标 URL：' + targetUrl, { status: 400 });
     }
 
-    // 白名单：只允许 oss.download.zakomc.top
-    const allowedDomains = ['oss.download.zakomc.top'];
+    // 白名单：只允许 oss.zakoxun.top
+    const allowedDomains = ['oss.zakoxun.top'];
     if (!allowedDomains.includes(targetHost)) {
       return new Response(
         `禁止代理：域名 ${targetHost} 不在白名单中。\n` +
