@@ -6,30 +6,24 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // 处理 favicon.ico 请求（直接返回空，避免404/400）
+    // 处理静态文件
+    if (path === '/' || path === '') {
+      return serveStaticFile('index.html');
+    }
+    if (path === '/style.css') {
+      return serveStaticFile('style.css', 'text/css');
+    }
+    if (path === '/script.js') {
+      return serveStaticFile('script.js', 'application/javascript');
+    }
+    if (path === '/background.jpg') {
+      return serveStaticFile('background.jpg', 'image/jpeg');
+    }
     if (path === '/favicon.ico') {
       return new Response(null, { status: 204 });
     }
 
-    // 处理 background.jpg 请求（返回透明图片或直接忽略）
-    if (path === '/background.jpg') {
-      // 返回一个 1x1 的透明 GIF，避免报错
-      const transparentPixel = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-      return new Response(atob(transparentPixel), {
-        status: 200,
-        headers: { 'Content-Type': 'image/gif' }
-      });
-    }
-
-    // 如果是根路径，显示可爱的提示页面
-    if (path === '/' || path === '') {
-      return new Response(getHomePage(), {
-        status: 200,
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
-      });
-    }
-
-    // 提取目标 URL（格式：/https://... 或 /http://...）
+    // 代理下载请求
     const fullPath = url.pathname + url.search;
     let targetUrl = null;
     if (fullPath.startsWith('/https://')) {
@@ -43,7 +37,6 @@ export default {
       });
     }
 
-    // 解析目标网址
     let targetHost;
     try {
       targetHost = new URL(targetUrl).hostname;
@@ -54,7 +47,6 @@ export default {
       });
     }
 
-    // 白名单：只允许 oss.zakoxun.top
     const allowedDomains = ['oss.zakoxun.top'];
     if (!allowedDomains.includes(targetHost)) {
       return new Response(getErrorPage('不可以哦～', `${targetHost} 不在白名单里呢～`), {
@@ -63,233 +55,20 @@ export default {
       });
     }
 
-    // 代理下载
     return fetchWithRetry(targetUrl);
   }
 };
 
-function getHomePage() {
-  return `<!DOCTYPE html>
+// 读取静态文件（需要将文件内容嵌入）
+function serveStaticFile(filename, contentType = 'text/html') {
+  const files = {
+    'index.html': `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZAKOXUN R2 OSS Proxy</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            min-height: 100vh;
-            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            transition: background 0.3s ease;
-        }
-        
-        body.light {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        }
-        
-        body.dark {
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-        }
-        
-        .card {
-            border-radius: 48px;
-            padding: 40px 35px;
-            max-width: 550px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
-            transition: background 0.3s ease;
-        }
-        
-        body.light .card {
-            background: rgba(255, 255, 255, 0.95);
-        }
-        
-        body.dark .card {
-            background: rgba(26, 32, 44, 0.95);
-        }
-        
-        .logo { font-size: 64px; margin-bottom: 15px; }
-        
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        
-        body.light h1 {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        
-        body.dark h1 {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        
-        .subtitle { 
-            margin-bottom: 30px; 
-            font-size: 14px;
-        }
-        
-        body.light .subtitle { color: #000000; }
-        body.dark .subtitle { color: #ffffff; }
-        
-        .url-box {
-            border-radius: 24px;
-            padding: 18px;
-            margin: 20px 0;
-        }
-        
-        body.light .url-box {
-            background: #fef5e6;
-            border: 1px solid #f39c12;
-        }
-        
-        body.dark .url-box {
-            background: #1f2937;
-            border: 1px solid #fbbf24;
-        }
-        
-        .url-label { 
-            font-size: 12px; 
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        
-        body.light .url-label { color: #000000; }
-        body.dark .url-label { color: #ffffff; }
-        
-        .url-example {
-            font-family: monospace;
-            font-size: 12px;
-            word-break: break-all;
-            padding: 10px;
-            border-radius: 16px;
-        }
-        
-        body.light .url-example {
-            background: #ffffff;
-            color: #000000;
-            border: 1px solid #f39c12;
-        }
-        
-        body.dark .url-example {
-            background: #111827;
-            color: #ffffff;
-            border: 1px solid #fbbf24;
-        }
-        
-        input {
-            width: 100%;
-            padding: 14px 18px;
-            font-size: 14px;
-            border: 2px solid;
-            border-radius: 40px;
-            outline: none;
-            font-family: monospace;
-            margin: 15px 0 10px;
-            transition: all 0.2s;
-        }
-        
-        body.light input {
-            background: #ffffff;
-            border-color: #f39c12;
-            color: #000000;
-        }
-        
-        body.dark input {
-            background: #1f2937;
-            border-color: #fbbf24;
-            color: #ffffff;
-        }
-        
-        body.light input:focus {
-            border-color: #e67e22;
-            box-shadow: 0 0 0 2px rgba(243,156,18,0.2);
-        }
-        
-        body.dark input:focus {
-            border-color: #f59e0b;
-            box-shadow: 0 0 0 2px rgba(251,191,36,0.2);
-        }
-        
-        input::placeholder {
-            color: #9ca3af;
-        }
-        
-        button {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: white;
-            border: none;
-            padding: 12px 32px;
-            border-radius: 40px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: opacity 0.2s;
-        }
-        
-        button:hover { opacity: 0.9; }
-        
-        .tips {
-            margin-top: 20px;
-            font-size: 11px;
-            line-height: 1.6;
-        }
-        
-        body.light .tips { color: #000000; }
-        body.dark .tips { color: #ffffff; }
-        
-        .mode-buttons {
-            margin-top: 20px;
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-        
-        .mode-btn {
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-        
-        body.light .mode-btn {
-            background: #e5e7eb;
-            color: #000000;
-        }
-        
-        body.dark .mode-btn {
-            background: #374151;
-            color: #ffffff;
-        }
-        
-        .mode-btn:hover {
-            transform: scale(1.02);
-            opacity: 0.9;
-        }
-        
-        footer {
-            margin-top: 25px;
-            font-size: 10px;
-        }
-        
-        body.light footer { color: #6b7280; }
-        body.dark footer { color: #9ca3af; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="light">
     <div class="card">
@@ -319,40 +98,305 @@ function getHomePage() {
         <footer>⚡ Powered by Cloudflare Workers</footer>
     </div>
     
-    <script>
-        function setTheme(theme) {
-            document.body.className = theme;
-            localStorage.setItem('theme', theme);
-        }
-        
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme);
-        
-        document.querySelectorAll('.mode-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                setTheme(btn.dataset.mode);
-            });
-        });
-        
-        document.getElementById('downloadBtn').addEventListener('click', () => {
-            let filename = document.getElementById('fileInput').value.trim();
-            if (!filename) {
-                alert('请输入文件名呀～');
-                return;
-            }
-            if (filename.startsWith('http')) {
-                window.open(filename, '_blank');
-            } else {
-                window.open('https://proxy.zakoxun.top/https://oss.zakoxun.top/' + encodeURIComponent(filename), '_blank');
-            }
-        });
-        
-        document.getElementById('fileInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('downloadBtn').click();
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
-</html>`;
+</html>`,
+    'style.css': `* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    transition: background 0.3s ease;
+    background-image: url('background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+body.light {
+    background-image: url('background.jpg');
+}
+
+body.dark {
+    background-image: url('background.jpg');
+    background-blend-mode: overlay;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.card {
+    border-radius: 48px;
+    padding: 40px 35px;
+    max-width: 550px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+    transition: background 0.3s ease;
+}
+
+body.light .card {
+    background: rgba(255, 255, 255, 0.92);
+}
+
+body.dark .card {
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.logo {
+    font-size: 64px;
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+body.light h1 {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+body.dark h1 {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.subtitle {
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+body.light .subtitle {
+    color: #000000;
+}
+
+body.dark .subtitle {
+    color: #ffffff;
+}
+
+.url-box {
+    border-radius: 24px;
+    padding: 18px;
+    margin: 20px 0;
+}
+
+body.light .url-box {
+    background: #fef5e6;
+    border: 1px solid #f39c12;
+}
+
+body.dark .url-box {
+    background: #1f2937;
+    border: 1px solid #fbbf24;
+}
+
+.url-label {
+    font-size: 12px;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+body.light .url-label {
+    color: #000000;
+}
+
+body.dark .url-label {
+    color: #ffffff;
+}
+
+.url-example {
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+    padding: 10px;
+    border-radius: 16px;
+}
+
+body.light .url-example {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #f39c12;
+}
+
+body.dark .url-example {
+    background: #111827;
+    color: #ffffff;
+    border: 1px solid #fbbf24;
+}
+
+input {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 14px;
+    border: 2px solid;
+    border-radius: 40px;
+    outline: none;
+    font-family: monospace;
+    margin: 15px 0 10px;
+    transition: all 0.2s;
+}
+
+body.light input {
+    background: #ffffff;
+    border-color: #f39c12;
+    color: #000000;
+}
+
+body.dark input {
+    background: #1f2937;
+    border-color: #fbbf24;
+    color: #ffffff;
+}
+
+body.light input:focus {
+    border-color: #e67e22;
+    box-shadow: 0 0 0 2px rgba(243,156,18,0.2);
+}
+
+body.dark input:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(251,191,36,0.2);
+}
+
+input::placeholder {
+    color: #9ca3af;
+}
+
+button {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 40px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.2s;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.tips {
+    margin-top: 20px;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+body.light .tips {
+    color: #000000;
+}
+
+body.dark .tips {
+    color: #ffffff;
+}
+
+.mode-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.mode-btn {
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+body.light .mode-btn {
+    background: #e5e7eb;
+    color: #000000;
+}
+
+body.dark .mode-btn {
+    background: #374151;
+    color: #ffffff;
+}
+
+.mode-btn:hover {
+    transform: scale(1.02);
+    opacity: 0.9;
+}
+
+footer {
+    margin-top: 25px;
+    font-size: 10px;
+}
+
+body.light footer {
+    color: #6b7280;
+}
+
+body.dark footer {
+    color: #9ca3af;
+}`,
+    'script.js': `// 主题切换
+function setTheme(theme) {
+    document.body.className = theme;
+    localStorage.setItem('theme', theme);
+}
+
+// 恢复保存的主题
+const savedTheme = localStorage.getItem('theme') || 'light';
+setTheme(savedTheme);
+
+// 绑定主题按钮
+document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        setTheme(btn.dataset.mode);
+    });
+});
+
+// 下载功能
+document.getElementById('downloadBtn').addEventListener('click', () => {
+    let filename = document.getElementById('fileInput').value.trim();
+    if (!filename) {
+        alert('请输入文件名呀～');
+        return;
+    }
+    if (filename.startsWith('http')) {
+        window.open(filename, '_blank');
+    } else {
+        window.open('https://proxy.zakoxun.top/https://oss.zakoxun.top/' + encodeURIComponent(filename), '_blank');
+    }
+});
+
+// 回车键触发下载
+document.getElementById('fileInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        document.getElementById('downloadBtn').click();
+    }
+});`
+  };
+
+  const content = files[filename];
+  if (!content) {
+    return new Response('Not Found', { status: 404 });
+  }
+
+  return new Response(content, {
+    status: 200,
+    headers: { 'Content-Type': contentType }
+  });
 }
 
 function getErrorPage(title, message) {
@@ -372,12 +416,17 @@ function getErrorPage(title, message) {
             align-items: center;
             padding: 20px;
             transition: background 0.3s ease;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
         }
         body.light {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-image: url('background.jpg');
         }
         body.dark {
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            background-image: url('background.jpg');
+            background-blend-mode: overlay;
+            background-color: rgba(0, 0, 0, 0.6);
         }
         .card {
             border-radius: 48px;
@@ -390,7 +439,7 @@ function getErrorPage(title, message) {
             background: rgba(255, 255, 255, 0.95);
         }
         body.dark .card {
-            background: rgba(26, 32, 44, 0.95);
+            background: rgba(0, 0, 0, 0.85);
         }
         .emoji { font-size: 64px; margin-bottom: 20px; }
         h2 { color: #e74c3c; margin-bottom: 15px; font-size: 24px; }
