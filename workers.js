@@ -56,63 +56,160 @@ function getHomePage() {
     <title>ZAKOXUN R2 OSS Proxy</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             min-height: 100vh;
-            background: url('background.jpg') center/cover fixed;
             font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            transition: background 0.3s ease;
         }
+        
+        body.light {
+            background-image: url('background.jpg');
+        }
+        
+        body.dark {
+            background-image: url('background.jpg');
+            background-blend-mode: overlay;
+        }
+        
         .card {
-            background: rgba(255,255,255,0.92);
             border-radius: 48px;
             padding: 40px 35px;
             max-width: 550px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+            transition: background 0.3s ease;
         }
+        
+        body.light .card {
+            background: rgba(255, 255, 255, 0.92);
+        }
+        
+        body.dark .card {
+            background: rgba(0, 0, 0, 0.85);
+        }
+        
         .logo { font-size: 64px; margin-bottom: 15px; }
+        
         h1 {
             font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        body.light h1 {
             background: linear-gradient(135deg, #f39c12, #e67e22);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            margin-bottom: 10px;
         }
-        .subtitle { color: #a0aec0; margin-bottom: 30px; font-size: 14px; }
+        
+        body.dark h1 {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle { 
+            margin-bottom: 30px; 
+            font-size: 14px;
+        }
+        
+        body.light .subtitle { color: #000000; }
+        body.dark .subtitle { color: #ffffff; }
+        
         .url-box {
-            background: #fffaf0;
             border-radius: 24px;
             padding: 18px;
             margin: 20px 0;
-            border: 1px solid #ffe0b5;
         }
-        .url-label { font-size: 12px; color: #f39c12; margin-bottom: 8px; }
+        
+        body.light .url-box {
+            background: #fef5e6;
+            border: 1px solid #f39c12;
+        }
+        
+        body.dark .url-box {
+            background: #1f2937;
+            border: 1px solid #fbbf24;
+        }
+        
+        .url-label { 
+            font-size: 12px; 
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        body.light .url-label { color: #000000; }
+        body.dark .url-label { color: #ffffff; }
+        
         .url-example {
             font-family: monospace;
             font-size: 12px;
-            color: #2d3748;
             word-break: break-all;
-            background: white;
             padding: 10px;
             border-radius: 16px;
         }
+        
+        body.light .url-example {
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #f39c12;
+        }
+        
+        body.dark .url-example {
+            background: #111827;
+            color: #ffffff;
+            border: 1px solid #fbbf24;
+        }
+        
         input {
             width: 100%;
             padding: 14px 18px;
             font-size: 14px;
-            border: 2px solid #ffe0b5;
+            border: 2px solid;
             border-radius: 40px;
             outline: none;
             font-family: monospace;
-            background: #fffaf0;
             margin: 15px 0 10px;
+            transition: all 0.2s;
         }
-        input:focus { border-color: #f39c12; background: white; }
+        
+        body.light input {
+            background: #ffffff;
+            border-color: #f39c12;
+            color: #000000;
+        }
+        
+        body.dark input {
+            background: #1f2937;
+            border-color: #fbbf24;
+            color: #ffffff;
+        }
+        
+        body.light input:focus {
+            border-color: #e67e22;
+            box-shadow: 0 0 0 2px rgba(243,156,18,0.2);
+        }
+        
+        body.dark input:focus {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 2px rgba(251,191,36,0.2);
+        }
+        
+        input::placeholder {
+            color: #9ca3af;
+        }
+        
         button {
             background: linear-gradient(135deg, #f39c12, #e67e22);
             color: white;
@@ -125,36 +222,61 @@ function getHomePage() {
             width: 100%;
             transition: opacity 0.2s;
         }
+        
         button:hover { opacity: 0.9; }
+        
         .tips {
             margin-top: 20px;
             font-size: 11px;
-            color: #bdc3c7;
             line-height: 1.6;
         }
-        .bg-buttons {
+        
+        body.light .tips { color: #000000; }
+        body.dark .tips { color: #ffffff; }
+        
+        .mode-buttons, .bg-buttons {
             margin-top: 15px;
             display: flex;
             gap: 8px;
             justify-content: center;
             flex-wrap: wrap;
         }
-        .bg-btn {
-            background: rgba(255,255,255,0.8);
-            border: 1px solid #e2e8f0;
-            padding: 5px 12px;
+        
+        .mode-btn, .bg-btn {
+            border: none;
+            padding: 6px 14px;
             border-radius: 30px;
-            font-size: 11px;
+            font-size: 12px;
             cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
         }
+        
+        body.light .mode-btn, body.light .bg-btn {
+            background: #e5e7eb;
+            color: #000000;
+        }
+        
+        body.dark .mode-btn, body.dark .bg-btn {
+            background: #374151;
+            color: #ffffff;
+        }
+        
+        .mode-btn:hover, .bg-btn:hover {
+            transform: scale(1.02);
+            opacity: 0.9;
+        }
+        
         footer {
             margin-top: 20px;
             font-size: 10px;
-            color: #cbd5e0;
         }
+        
+        body.light footer { color: #000000; }
+        body.dark footer { color: #ffffff; }
     </style>
 </head>
-<body>
+<body class="light">
     <div class="card">
         <div class="logo">☁️🐻‍❄️</div>
         <h1>ZAKOXUN Cloudflare R2 OSS Proxy</h1>
@@ -172,36 +294,36 @@ function getHomePage() {
         
         <div class="tips">
             💡 只能代理 oss.zakoxun.top 的文件<br>
-            🎨 点击下面按钮可以换背景颜色
+            🎨 点击下面按钮可以切换主题
         </div>
         
-        <div class="bg-buttons">
-            <button class="bg-btn" data-bg="default">🌈 默认</button>
-            <button class="bg-btn" data-bg="purple">💜 紫色</button>
-            <button class="bg-btn" data-bg="ocean">🌊 蓝色</button>
-            <button class="bg-btn" data-bg="sunset">🌅 橙色</button>
-            <button class="bg-btn" data-bg="forest">🌲 绿色</button>
+        <div class="mode-buttons">
+            <button class="mode-btn" data-mode="light">☀️ 浅色模式</button>
+            <button class="mode-btn" data-mode="dark">🌙 深色模式</button>
         </div>
+        
         <footer>⚡ Powered by Cloudflare Workers</footer>
     </div>
     
     <script>
-        const bgMap = {
-            default: "url('background.jpg') center/cover fixed",
-            purple: "linear-gradient(135deg, #9b59b6, #8e44ad)",
-            ocean: "linear-gradient(135deg, #3498db, #2980b9)",
-            sunset: "linear-gradient(135deg, #e67e22, #d35400)",
-            forest: "linear-gradient(135deg, #2ecc71, #27ae60)"
-        };
-        
-        function setBackground(bgKey) {
-            document.body.style.background = bgMap[bgKey];
+        // 主题切换
+        function setTheme(theme) {
+            document.body.className = theme;
+            localStorage.setItem('theme', theme);
         }
         
-        document.querySelectorAll('.bg-btn').forEach(btn => {
-            btn.addEventListener('click', () => setBackground(btn.dataset.bg));
+        // 恢复保存的主题
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+        
+        // 绑定主题按钮
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setTheme(btn.dataset.mode);
+            });
         });
         
+        // 下载功能
         document.getElementById('downloadBtn').addEventListener('click', () => {
             let filename = document.getElementById('fileInput').value.trim();
             if (!filename) {
@@ -234,24 +356,42 @@ function getErrorPage(title, message) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             min-height: 100vh;
-            background: url('background.jpg') center/cover fixed;
             font-family: system-ui, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            transition: background 0.3s ease;
+        }
+        body.light {
+            background-image: url('background.jpg');
+        }
+        body.dark {
+            background-image: url('background.jpg');
+            background-blend-mode: overlay;
         }
         .card {
-            background: rgba(255,255,255,0.95);
             border-radius: 48px;
             padding: 40px 35px;
             max-width: 450px;
             text-align: center;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+        }
+        body.light .card {
+            background: rgba(255, 255, 255, 0.92);
+        }
+        body.dark .card {
+            background: rgba(0, 0, 0, 0.85);
         }
         .emoji { font-size: 64px; margin-bottom: 20px; }
         h2 { color: #e74c3c; margin-bottom: 15px; font-size: 24px; }
-        p { color: #4a5568; margin-bottom: 25px; line-height: 1.6; }
+        p { margin-bottom: 25px; line-height: 1.6; }
+        body.light p { color: #000000; }
+        body.dark p { color: #ffffff; }
         a {
             display: inline-block;
             background: linear-gradient(135deg, #f39c12, #e67e22);
@@ -261,15 +401,39 @@ function getErrorPage(title, message) {
             text-decoration: none;
             font-weight: bold;
         }
+        .mode-btn {
+            margin-top: 20px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        body.light .mode-btn {
+            background: #e5e7eb;
+            color: #000000;
+        }
+        body.dark .mode-btn {
+            background: #374151;
+            color: #ffffff;
+        }
     </style>
 </head>
-<body>
+<body class="light">
     <div class="card">
         <div class="emoji">😿💔</div>
         <h2>${escapeHtml(title)}</h2>
         <p>${escapeHtml(message)}</p>
         <a href="/">🏠 返回首页</a>
+        <div style="margin-top: 15px;">
+            <button class="mode-btn" onclick="document.body.className = document.body.className === 'light' ? 'dark' : 'light'; localStorage.setItem('theme', document.body.className)">🌓 切换主题</button>
+        </div>
     </div>
+    <script>
+        const saved = localStorage.getItem('theme') || 'light';
+        document.body.className = saved;
+    </script>
 </body>
 </html>`;
 }
