@@ -69,7 +69,7 @@ function getHomePage() {
         }
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('background.jpg') center/cover fixed;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
@@ -86,7 +86,7 @@ function getHomePage() {
             height: 100%;
             z-index: 0;
         }
-        /* 默认背景装饰 */
+        /* 默认背景装饰 - 如果背景图加载失败，显示装饰 */
         .bg-default {
             position: absolute;
             top: 0;
@@ -94,6 +94,7 @@ function getHomePage() {
             width: 100%;
             height: 100%;
             overflow: hidden;
+            z-index: -1;
         }
         .bg-default span {
             position: absolute;
@@ -114,7 +115,7 @@ function getHomePage() {
         .card {
             position: relative;
             z-index: 1;
-            background: rgba(255,255,255,0.95);
+            background: rgba(255,255,255,0.92);
             border-radius: 60px;
             padding: 50px 40px;
             max-width: 620px;
@@ -123,7 +124,7 @@ function getHomePage() {
             backdrop-filter: blur(10px);
             text-align: center;
             animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.5);
         }
         @keyframes bounceIn {
             0% { opacity: 0; transform: scale(0.8) translateY(-50px); }
@@ -371,7 +372,7 @@ function getErrorPage(title, message) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            background: url('background.jpg') center/cover fixed;
             font-family: system-ui, sans-serif;
             display: flex;
             justify-content: center;
