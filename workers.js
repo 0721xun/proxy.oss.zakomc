@@ -59,7 +59,7 @@ export default {
   }
 };
 
-// 读取静态文件（需要将文件内容嵌入）
+// 读取静态文件（将文件内容嵌入）
 function serveStaticFile(filename, contentType = 'text/html') {
   const files = {
     'index.html': `<!DOCTYPE html>
@@ -71,6 +71,7 @@ function serveStaticFile(filename, contentType = 'text/html') {
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="light">
+    <img src="background.jpg" class="bg-image" alt="背景">
     <div class="card">
         <div class="logo">☁️🐻‍❄️</div>
         <h1>ZAKOXUN Cloudflare R2 OSS Proxy</h1>
@@ -107,6 +108,16 @@ function serveStaticFile(filename, contentType = 'text/html') {
     box-sizing: border-box;
 }
 
+.bg-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
 body {
     min-height: 100vh;
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -114,21 +125,11 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
-    transition: background 0.3s ease;
-    background-image: url('background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    position: relative;
 }
 
-body.light {
-    background-image: url('background.jpg');
-}
-
-body.dark {
-    background-image: url('background.jpg');
-    background-blend-mode: overlay;
-    background-color: rgba(0, 0, 0, 0.6);
+body.dark .bg-image {
+    filter: brightness(0.6);
 }
 
 .card {
@@ -139,6 +140,8 @@ body.dark {
     text-align: center;
     box-shadow: 0 20px 35px rgba(0,0,0,0.2);
     transition: background 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
 
 body.light .card {
@@ -355,18 +358,15 @@ function setTheme(theme) {
     localStorage.setItem('theme', theme);
 }
 
-// 恢复保存的主题
 const savedTheme = localStorage.getItem('theme') || 'light';
 setTheme(savedTheme);
 
-// 绑定主题按钮
 document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         setTheme(btn.dataset.mode);
     });
 });
 
-// 下载功能
 document.getElementById('downloadBtn').addEventListener('click', () => {
     let filename = document.getElementById('fileInput').value.trim();
     if (!filename) {
@@ -380,7 +380,6 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
     }
 });
 
-// 回车键触发下载
 document.getElementById('fileInput').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         document.getElementById('downloadBtn').click();
@@ -415,18 +414,19 @@ function getErrorPage(title, message) {
             justify-content: center;
             align-items: center;
             padding: 20px;
-            transition: background 0.3s ease;
-            background-image: url('background.jpg');
-            background-size: cover;
-            background-position: center;
+            position: relative;
         }
-        body.light {
-            background-image: url('background.jpg');
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
         }
-        body.dark {
-            background-image: url('background.jpg');
-            background-blend-mode: overlay;
-            background-color: rgba(0, 0, 0, 0.6);
+        body.dark .bg-image {
+            filter: brightness(0.6);
         }
         .card {
             border-radius: 48px;
@@ -434,6 +434,8 @@ function getErrorPage(title, message) {
             max-width: 450px;
             text-align: center;
             box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
         }
         body.light .card {
             background: rgba(255, 255, 255, 0.95);
@@ -475,6 +477,7 @@ function getErrorPage(title, message) {
     </style>
 </head>
 <body class="light">
+    <img src="background.jpg" class="bg-image" alt="背景">
     <div class="card">
         <div class="emoji">😿💔</div>
         <h2>${escapeHtml(title)}</h2>

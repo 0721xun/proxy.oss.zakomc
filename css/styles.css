@@ -4,6 +4,17 @@
     box-sizing: border-box;
 }
 
+/* 背景图片 - 用 img 标签实现全屏覆盖 */
+.bg-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
 body {
     min-height: 100vh;
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -11,21 +22,11 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
-    transition: background 0.3s ease;
-    background-image: url('background.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    position: relative;
 }
 
-body.light {
-    background-image: url('background.jpg');
-}
-
-body.dark {
-    background-image: url('background.jpg');
-    background-blend-mode: overlay;
-    background-color: rgba(0, 0, 0, 0.6);
+body.dark .bg-image {
+    filter: brightness(0.6);
 }
 
 .card {
@@ -36,6 +37,8 @@ body.dark {
     text-align: center;
     box-shadow: 0 20px 35px rgba(0,0,0,0.2);
     transition: background 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
 
 body.light .card {
