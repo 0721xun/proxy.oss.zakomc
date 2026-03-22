@@ -4,8 +4,24 @@
 export default {
   async fetch(request) {
     const url = new URL(request.url);
-    const path = url.pathname + url.search;
+    const path = url.pathname;
 
+    // 处理 favicon.ico 请求（直接返回空，避免404/400）
+    if (path === '/favicon.ico') {
+      return new Response(null, { status: 204 });
+    }
+
+    // 处理 background.jpg 请求（返回透明图片或直接忽略）
+    if (path === '/background.jpg') {
+      // 返回一个 1x1 的透明 GIF，避免报错
+      const transparentPixel = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+      return new Response(atob(transparentPixel), {
+        status: 200,
+        headers: { 'Content-Type': 'image/gif' }
+      });
+    }
+
+    // 如果是根路径，显示可爱的提示页面
     if (path === '/' || path === '') {
       return new Response(getHomePage(), {
         status: 200,
@@ -13,11 +29,13 @@ export default {
       });
     }
 
+    // 提取目标 URL（格式：/https://... 或 /http://...）
+    const fullPath = url.pathname + url.search;
     let targetUrl = null;
-    if (path.startsWith('/https://')) {
-      targetUrl = 'https://' + path.slice(9);
-    } else if (path.startsWith('/http://')) {
-      targetUrl = 'http://' + path.slice(8);
+    if (fullPath.startsWith('/https://')) {
+      targetUrl = 'https://' + fullPath.slice(9);
+    } else if (fullPath.startsWith('/http://')) {
+      targetUrl = 'http://' + fullPath.slice(8);
     } else {
       return new Response(getErrorPage('呜呜呜～格式不对啦', '要在路径后面加上完整的下载链接哦～'), {
         status: 400,
@@ -25,6 +43,7 @@ export default {
       });
     }
 
+    // 解析目标网址
     let targetHost;
     try {
       targetHost = new URL(targetUrl).hostname;
@@ -35,6 +54,7 @@ export default {
       });
     }
 
+    // 白名单：只允许 oss.zakoxun.top
     const allowedDomains = ['oss.zakoxun.top'];
     if (!allowedDomains.includes(targetHost)) {
       return new Response(getErrorPage('不可以哦～', `${targetHost} 不在白名单里呢～`), {
@@ -43,6 +63,7 @@ export default {
       });
     }
 
+    // 代理下载
     return fetchWithRetry(targetUrl);
   }
 };
@@ -64,20 +85,15 @@ function getHomePage() {
             justify-content: center;
             align-items: center;
             padding: 20px;
-            background-image: url('background.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
             transition: background 0.3s ease;
         }
         
         body.light {
-            background-image: url('background.jpg');
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
         
         body.dark {
-            background-image: url('background.jpg');
-            background-blend-mode: overlay;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
         }
         
         .card {
@@ -91,11 +107,11 @@ function getHomePage() {
         }
         
         body.light .card {
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.95);
         }
         
         body.dark .card {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(26, 32, 44, 0.95);
         }
         
         .logo { font-size: 64px; margin-bottom: 15px; }
@@ -234,46 +250,45 @@ function getHomePage() {
         body.light .tips { color: #000000; }
         body.dark .tips { color: #ffffff; }
         
-        .mode-buttons, .bg-buttons {
-            margin-top: 15px;
+        .mode-buttons {
+            margin-top: 20px;
             display: flex;
-            gap: 8px;
+            gap: 12px;
             justify-content: center;
-            flex-wrap: wrap;
         }
         
-        .mode-btn, .bg-btn {
+        .mode-btn {
             border: none;
-            padding: 6px 14px;
+            padding: 8px 20px;
             border-radius: 30px;
-            font-size: 12px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
             font-weight: 500;
         }
         
-        body.light .mode-btn, body.light .bg-btn {
+        body.light .mode-btn {
             background: #e5e7eb;
             color: #000000;
         }
         
-        body.dark .mode-btn, body.dark .bg-btn {
+        body.dark .mode-btn {
             background: #374151;
             color: #ffffff;
         }
         
-        .mode-btn:hover, .bg-btn:hover {
+        .mode-btn:hover {
             transform: scale(1.02);
             opacity: 0.9;
         }
         
         footer {
-            margin-top: 20px;
+            margin-top: 25px;
             font-size: 10px;
         }
         
-        body.light footer { color: #000000; }
-        body.dark footer { color: #ffffff; }
+        body.light footer { color: #6b7280; }
+        body.dark footer { color: #9ca3af; }
     </style>
 </head>
 <body class="light">
@@ -293,8 +308,7 @@ function getHomePage() {
         <button id="downloadBtn">⬇️ 立即下载 ⬇️</button>
         
         <div class="tips">
-            💡 只能代理 oss.zakoxun.top 的文件<br>
-            🎨 点击下面按钮可以切换主题
+            💡 只能代理 oss.zakoxun.top 的文件
         </div>
         
         <div class="mode-buttons">
@@ -306,24 +320,20 @@ function getHomePage() {
     </div>
     
     <script>
-        // 主题切换
         function setTheme(theme) {
             document.body.className = theme;
             localStorage.setItem('theme', theme);
         }
         
-        // 恢复保存的主题
         const savedTheme = localStorage.getItem('theme') || 'light';
         setTheme(savedTheme);
         
-        // 绑定主题按钮
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 setTheme(btn.dataset.mode);
             });
         });
         
-        // 下载功能
         document.getElementById('downloadBtn').addEventListener('click', () => {
             let filename = document.getElementById('fileInput').value.trim();
             if (!filename) {
@@ -361,18 +371,13 @@ function getErrorPage(title, message) {
             justify-content: center;
             align-items: center;
             padding: 20px;
-            background-image: url('background.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
             transition: background 0.3s ease;
         }
         body.light {
-            background-image: url('background.jpg');
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
         body.dark {
-            background-image: url('background.jpg');
-            background-blend-mode: overlay;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
         }
         .card {
             border-radius: 48px;
@@ -382,10 +387,10 @@ function getErrorPage(title, message) {
             box-shadow: 0 20px 35px rgba(0,0,0,0.2);
         }
         body.light .card {
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.95);
         }
         body.dark .card {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(26, 32, 44, 0.95);
         }
         .emoji { font-size: 64px; margin-bottom: 20px; }
         h2 { color: #e74c3c; margin-bottom: 15px; font-size: 24px; }
