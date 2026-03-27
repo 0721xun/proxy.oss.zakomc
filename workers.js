@@ -7,14 +7,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname + url.search;
 
-    // 首页说明
+    // 根路径提示
     if (path === '/' || path === '') {
       return new Response(
-        'ZAKOXUN Proxy\n\n' +
-        '使用方法：\n' +
-        'https://proxy.zakoxun.top/https://oss.zakoxun.top/文件名\n\n' +
-        '白名单域名：oss.zakoxun.top\n' +
-        '其他域名将被拒绝',
+        '请在 / 后输入链接',
         {
           status: 200,
           headers: { 'Content-Type': 'text/plain; charset=utf-8' }
@@ -30,9 +26,7 @@ export default {
       targetUrl = 'http://' + path.slice(8);
     } else {
       return new Response(
-        '错误：格式不正确\n\n' +
-        '正确格式：\n' +
-        'https://proxy.zakoxun.top/https://oss.zakoxun.top/文件名',
+        '请在 / 后输入链接',
         {
           status: 400,
           headers: { 'Content-Type': 'text/plain; charset=utf-8' }
@@ -46,8 +40,7 @@ export default {
       targetHost = new URL(targetUrl).hostname;
     } catch (e) {
       return new Response(
-        '错误：无效的下载链接\n\n' +
-        '请检查链接格式是否正确',
+        '请在 / 后输入链接',
         {
           status: 400,
           headers: { 'Content-Type': 'text/plain; charset=utf-8' }
